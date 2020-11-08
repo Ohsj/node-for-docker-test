@@ -12,7 +12,7 @@ COPY package.json .
 FROM base AS dependencies
 # install node modules
 RUN npm set progress=false && npm config set depth 0
-RUN npm install --only=production
+RUN npm install --only=prd
 # copy production node_modules aside
 RUN cp -R node_modules prod_node_modules
 # install all node_modules, including 'devDependencies'
@@ -20,10 +20,7 @@ RUN npm install
 
 # ---- Builder ----
 FROM dependencies AS builder
-COPY --from=dependencies /example-dockerizing-express/node_modules ./node_modules
-COPY ./.babelrc ./.babelrc
-COPY ./lib ./lib
-COPY ./test ./test
+COPY --from=dependencies /docker-test/node_modules ./node_modules
 RUN npm run build
 RUN npm run test
 
@@ -33,9 +30,9 @@ FROM base AS release
 ARG NODE_ENV
 ENV NODE_ENV=${NODE_ENV}
 # copy production node_modules
-COPY --from=dependencies /example-dockerizing-express/prod_node_modules ./node_modules
+COPY --from=dependencies /docker-test/prod_node_modules ./node_modules
 # copy app sources
-COPY --from=builder /example-dockerizing-express/dist ./dist
+COPY --from=builder /docker-test/dist ./dist
 # expose port and define CMD
 EXPOSE 3000
 CMD ["sh", "-c", "npm run start:${NODE_ENV}"]
