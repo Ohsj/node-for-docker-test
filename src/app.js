@@ -8,5 +8,6 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
+   process.send('ready')
    console.log(`docker-test app listening at http://localhost:${port}`);
 });
